@@ -12,7 +12,6 @@ All the packages that are required so that all the codes can run are:
 - numpy
 - scipy
 - matplotlib
-- stat_tools from arnaupv https://github.com/arnaupujol/stat_tools
 
 Installation:
 ----------------------

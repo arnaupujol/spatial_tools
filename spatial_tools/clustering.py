@@ -1,7 +1,6 @@
 #This module contains methods for clusteirng analyses.
 
 import numpy as np
-from stat_tools import errors
 
 def get_dist(px1, py1, px2, py2, mode = 'latlon'):
     """
@@ -189,12 +188,12 @@ def num_pairs_bootstrap(x1, y1, x2 = None, y2 = None, bins = 10, ranges = None, 
     numpairs, weighted_bins, edges = num_pairs(x1 = x1, y1 = y1, x2 = x2, y2 = y2, bins = bins, ranges = ranges, mode = mode)
     numpairs_rands = []
     for i in range(nrands):
-        resample_indeces_1 = errors.bootstrap_resample(np.arange(len(x1)))
+        resample_indeces_1 = bootstrap_resample(np.arange(len(x1)))
         x1r, y1r = x1[resample_indeces_1], y1[resample_indeces_1]
         if x2 is None or y2 is None:
             x2r, y2r = None, None
         else:
-            resample_indeces_2 = errors.bootstrap_resample(np.arange(len(x2)))
+            resample_indeces_2 = bootstrap_resample(np.arange(len(x2)))
             x2r, y2r = x2[resample_indeces_2], y2[resample_indeces_2]
         numpairs_r, mean_bin_r, edges_r = num_pairs(x1 = x1r, y1 = y1r, x2 = x2r, y2 = y2r, bins = bins, ranges = ranges, mode = mode)
         numpairs_rands.append(numpairs_r)
@@ -266,3 +265,24 @@ def correlation_function(x1, y1, x2, y2, bins = 10, ranges = None, mode = 'latlo
         return corr, weighted_bins_1, edges_1, errors
     else:
         return corr, weighted_bins_1, edges_1
+
+def bootstrap_resample(data):
+    """
+    This method creates a shuffled version of the data
+    with resampling (so repetitions can happen).
+
+    Parameters:
+    -----------
+    data: np.ndarray
+        Data with shape (samples, values)
+
+    Returns:
+    --------
+    new_data: np.ndarray
+        New data resample from the original, resampling
+        the samples with their data
+    """
+    data_len = len(data)
+    rand_ints = np.random.randint(0, data_len, data_len)
+    new_data = data[rand_ints]
+    return new_data
