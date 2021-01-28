@@ -137,7 +137,8 @@ def num_pairs(x1, y1, x2 = None, y2 = None, bins = 10, ranges = None, mode = 'la
     weighted_bins /= numpairs
     return numpairs, weighted_bins, edges
 
-def num_pairs_bootstrap(x1, y1, x2 = None, y2 = None, bins = 10, ranges = None, nrands = 10, mode = 'latlon', out_subsamples = False):
+def num_pairs_bootstrap(x1, y1, x2 = None, y2 = None, bins = 10, ranges = None, \
+                        nrands = 10, mode = 'latlon', out_subsamples = False):
     """
     This method counts the number of pairs between two populations
     in different distance bins and its bootstrap error.
@@ -205,7 +206,8 @@ def num_pairs_bootstrap(x1, y1, x2 = None, y2 = None, bins = 10, ranges = None, 
     else:
         return numpairs, errors, weighted_bins, edges, mean_bootstrap
 
-def correlation_function(x1, y1, x2, y2, bins = 10, ranges = None, mode = 'latlon', get_error = True, nrands = 10):
+def correlation_function(x1, y1, x2, y2, bins = 10, ranges = None, \
+                        mode = 'latlon', get_error = True, nrands = 10):
     """
     This method calculates the 2-point correlation function between two populations.
 

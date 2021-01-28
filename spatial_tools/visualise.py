@@ -3,7 +3,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def scatter_geo_map(lon, lat, title = '', figsize = [10,8], s = 10, c = 'tab:blue', cmap = 'viridis', alpha = 1., list_locs = None):
+def scatter_geo_map(lon, lat, title = '', figsize = [10,8], s = 10, \
+                    c = 'tab:blue', cmap = 'viridis', alpha = 1., \
+                    list_locs = None):
     """
     This method shows a scatter plot of geographical positions on top of
     a cartographic map around the data.
@@ -60,7 +62,9 @@ def locations(list_locs, c = 'k'):
         plt.scatter(list_locs[loc][0], list_locs[loc][1], c = c, s = 30)
         plt.annotate(loc, xy = [list_locs[loc][0] + .02, list_locs[loc][1]], color = c)
 
-def spatial_hist2d_map(lon, lat, list_locs, title = '', bins = 10, ranges = None, cmap = 'binary', loc_col = 'tab:red', vmin = None, vmax = None):
+def spatial_hist2d_map(lon, lat, list_locs, title = '', bins = 10, \
+                        ranges = None, cmap = 'binary', loc_col = 'tab:red', \
+                        vmin = None, vmax = None, weights = None):
     """
     This method shows a map of densities from a 2d histogram of geographical
     positions.
@@ -87,7 +91,8 @@ def spatial_hist2d_map(lon, lat, list_locs, title = '', bins = 10, ranges = None
         Minimum value for the colormap
     vmax: float
         Maximum value for the colormap
-
+    weights: np.array
+        Weights to apply to the data to calculate the 2d histogram.
 
     Returns:
     --------
@@ -97,7 +102,8 @@ def spatial_hist2d_map(lon, lat, list_locs, title = '', bins = 10, ranges = None
     if ranges is None:
         ranges = [[np.min(lon), np.max(lon)],[np.min(lat), np.max(lat)]]
     plt.figure(figsize=[8,6])
-    plt.hist2d(lon, lat, bins = bins, range = ranges, cmap = cmap, vmin = vmin, vmax = vmax)
+    plt.hist2d(lon, lat, bins = bins, range = ranges, cmap = cmap, \
+                vmin = vmin, vmax = vmax, weights = weights)
     plt.colorbar()
     locations(list_locs, c = loc_col)
     plt.xlabel('Longitude')
@@ -105,7 +111,10 @@ def spatial_hist2d_map(lon, lat, list_locs, title = '', bins = 10, ranges = None
     plt.title(title)
     plt.show()
 
-def spatial_hist2d_ratio(lon1, lat1, lon2, lat2, list_locs, title = '', bins = 10, ranges = None, cmap = 'viridis', loc_col = 'r', vmin = None, vmax = None):
+def spatial_hist2d_ratio(lon1, lat1, lon2, lat2, list_locs, title = '', \
+                        bins = 10, ranges = None, cmap = 'viridis', \
+                        loc_col = 'r', vmin = None, vmax = None, \
+                        weights_1 = None, weights_2 = None):
     """
     This method shows the ratio of two 2d histograms in spatial coordinates.
 
@@ -135,6 +144,10 @@ def spatial_hist2d_ratio(lon1, lat1, lon2, lat2, list_locs, title = '', bins = 1
         Minimum value for the colormap
     vmax: float
         Maximum value for the colormap
+    weights_1: np.array
+        Weights applied to the histograms for the first population
+    weights_2: np.array
+        Weights applied to the histograms for the second population
 
     Returns:
     --------
@@ -154,9 +167,15 @@ def spatial_hist2d_ratio(lon1, lat1, lon2, lat2, list_locs, title = '', bins = 1
         max_lat1, max_lat2 = np.max(lat1), np.max(lat2)
         min_lat, max_lat = min([min_lat1, min_lat2]), max([max_lat1, max_lat2])
         ranges = [[min_lon, max_lon],[min_lat, max_lat]]
+    if weights_1 is None:
+        weights_1 = np.ones_like(lon1)
+    if weights_2 is None:
+        weights_2 = np.ones_like(lon2)
     #Calculating histograms and ratio
-    h1, xedges, yedges = np.histogram2d(lon1, lat1, bins = bins, range = ranges)
-    h2, xedges, yedges = np.histogram2d(lon2, lat2, bins = bins, range = ranges)
+    h1, xedges, yedges = np.histogram2d(lon1, lat1, bins = bins, \
+                                        range = ranges, weights = weights_1)
+    h2, xedges, yedges = np.histogram2d(lon2, lat2, bins = bins, \
+                                        range = ranges, weights = weights_2)
     ratio = h1/h2
 
     #Make figure
