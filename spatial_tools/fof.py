@@ -64,7 +64,6 @@ def get_fofid(positions, scale):
     #Create KDTree
     tree =spatial.KDTree(positions)
     #Query KDTree
-    #distances, indeces = tree.query(positions, k = len(positions), distance_upper_bound = scale)
     indeces = get_friends_indeces(positions, scale, tree)
 
     last_fofid = 0
@@ -73,10 +72,8 @@ def get_fofid(positions, scale):
         if len(indeces[i]) == 1:
             continue
         else:
-            #Mask indeces farther than scale
-            #indeces_mask = indeces[i] < len(positions)
             #Define indeces of selected friends
-            indeces_friends = indeces[i]#[indeces_mask]
+            indeces_friends = indeces[i]
             #FOFids of these friends
             fofid_friends = fofid[indeces_friends]
             #Unique valies of fofids
