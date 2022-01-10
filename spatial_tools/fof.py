@@ -134,7 +134,7 @@ def get_fof_PR(positions, test_result, scale, fofid = None):
     positive_positions = positions[test_result == 1]
     #Computing fofid is needed
     if fofid is None:
-        fofid = fof.get_fofid(positive_positions, scale)
+        fofid = get_fofid(positive_positions, scale)
     #Create KDTree for all populations
     tree =spatial.KDTree(positions)
 
@@ -155,17 +155,13 @@ def get_fof_PR(positions, test_result, scale, fofid = None):
         has_this_fofid = fofid == f
         fofid_indeces = np.arange(len(positive_positions))[has_this_fofid]
         #for all these indeces, get list of friends from all positions
-        all_friends_indeces = fof.get_friends_indeces(positive_positions[fofid_indeces], scale, tree)
+        all_friends_indeces = get_friends_indeces(positive_positions[fofid_indeces], scale, tree)
         #get unique values of such indeces
         total_friends_indeces = np.unique(np.concatenate(all_friends_indeces))
         #get mean infection from all the unique indeces
         mean_pr = np.mean(test_result[total_friends_indeces])
         #assign mean PR to each fofid for the positive cases
         mean_pr_fof[fofid_indeces] = mean_pr
-        #assign mean PR to each extended fofid
-        mean_pr_ext_fof[total_friends_indeces] = mean_pr
-        #assign FOF id to non-infected positions
-        extended_fofid[total_friends_indeces] = f
         #setting FOF catalogue
         fof_catalogue['id'].append(f)
         fof_catalogue['mean_pos'].append(np.mean(positive_positions[fofid_indeces], axis = 0))
