@@ -32,7 +32,10 @@ def get_friends_indeces(positions, scale, tree):
         while dist <= scale:
             kth += 1
             dist, index = tree.query([positions[i]], k = [kth])
-            if dist <= scale:
+            if dist == 0 and kth > 1:#avoiding issue for >1 point with dist == 0
+                d, index = tree.query([positions[i]], k = kth)
+                indeces[i] = index[0].tolist()
+            elif dist <= scale:
                 indeces[i].append(index[0][0])
             else:
                 break
