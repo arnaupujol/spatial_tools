@@ -1,7 +1,9 @@
 #This module contains methods to identify Friends of Friends groups.
 
 import numpy as np
-from scipy import spatial
+import pandas as pd
+import geopandas
+from scipy import spatial, stats
 
 def get_friends_indeces(positions, scale, tree):
     """
@@ -130,8 +132,8 @@ def get_fof_PR(positions, test_result, scale, fofid = None):
         without a FoF.
     mean_pr_fof: np.array
         Mean PR corresponding to fofid
-    fof_catalogue: dict
-        Dictionary of a catalogue of the FOF groups and its main characteristics
+    fof_catalogue: geopandas.DataFrame
+        Catalogue of the FOF groups and its main characteristics
     """
     #Define positions of positive cases
     positive_positions = positions[test_result == 1]
@@ -174,4 +176,36 @@ def get_fof_PR(positions, test_result, scale, fofid = None):
         fof_catalogue['negatives'].append(len(total_friends_indeces) - len(fofid_indeces))
         fof_catalogue['total'].append(len(total_friends_indeces))
         fof_catalogue['indeces'].append(total_friends_indeces)
+    #Make the fof_catalogue a geopandas dataframe
+    fof_catalogue = fof2geodf(fof_catalogue)
+    #Calculate p-value from binomial distribution assuming random infections
+    total_positives = np.sum(test_result)
+    total_n = len(test_result)
+    fof_catalogue['p'] = 1 - stats.binom.cdf(fof_catalogue['positives']-1, \
+                                             fof_catalogue['total'], \
+                                             total_positives/total_n)#p-value of FOF
     return fofid, mean_pr_fof, fof_catalogue
+
+def fof2geodf(fof_catalogue, epsg = 3857):
+    """
+    This method transforms the FOF catalogue dictionary
+    into a geopandas dataframe.
+
+    Parameters:
+    -----------
+    fof_catalogue: dict
+        Dictionary with the FOF catalogue
+    epsg: int
+        GIS spatial projection of coordinates
+
+    Returns:
+    --------
+    fof_geocat: geopandas.GeoDataFrame
+        Data frame of FOF catalogue with GIS coordinates
+    """
+    fof_geocat = pd.DataFrame(fof_catalogue)
+    x_points = np.array([i[0] for i in fof_geocat['mean_pos']])
+    y_points = np.array([i[1] for i in fof_geocat['mean_pos']])
+    fof_geocat = geopandas.GeoDataFrame(fof_geocat, geometry = geopandas.points_from_xy(x_points, y_points))
+    fof_geocat = fof_geocat.set_crs(epsg=epsg)
+    return fof_geocat
