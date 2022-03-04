@@ -279,7 +279,7 @@ def get_temp_id(fof_cat_list, linking_time, linking_dist, get_timelife = True):
                     #Calculating distance between hotspots
                     dist = get_dist(fof_cat_list[t].loc[f]['mean_pos'], \
                                     fof_cat_list[t2].loc[f2]['mean_pos'])
-                    if dist <= scale:
+                    if dist <= linking_dist:
                         temp_id1 = fof_cat_list[t].loc[f]['tempID']
                         temp_id2 = fof_cat_list[t2].loc[f2]['tempID']
                         #Assign tempIDs to linked hotspots
