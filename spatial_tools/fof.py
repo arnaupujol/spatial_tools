@@ -138,6 +138,8 @@ def get_fof_PR(positions, test_result, scale, fofid = None, min_neighbours = 2):
         without a FoF.
     mean_pr_fof: np.array
         Mean PR corresponding to fofid
+    pval_fof: np.array
+        P-value corresponding to fofid
     fof_catalogue: geopandas.DataFrame
         Catalogue of the FOF groups and its main characteristics
     """
@@ -149,9 +151,13 @@ def get_fof_PR(positions, test_result, scale, fofid = None, min_neighbours = 2):
                             min_neighbours = min_neighbours)
     #Create KDTree for all populations
     tree =spatial.KDTree(positions)
+    #Define total number of positive and cases
+    total_positives = np.sum(test_result)
+    total_n = len(test_result)
 
-    #Mean PR for the positive cases in FOFs
+    #Mean PR and p-value for the positive cases in FOFs
     mean_pr_fof = np.zeros_like(fofid)
+    pval_fof = np.ones_like(fofid)
     #FOF catalogue
     fof_catalogue = {'id' : [], #FOF id
                      'mean_pos' : [], #Mean position of positive cases
@@ -172,8 +178,11 @@ def get_fof_PR(positions, test_result, scale, fofid = None, min_neighbours = 2):
         total_friends_indeces = np.unique(np.concatenate(all_friends_indeces))
         #get mean infection from all the unique indeces
         mean_pr = np.mean(test_result[total_friends_indeces])
-        #assign mean PR to each fofid for the positive cases
+        #assign mean PR and p-value to each fofid for the positive cases
         mean_pr_fof[fofid_indeces] = mean_pr
+        pval_fof[fofid_indeces] = 1 - stats.binom.cdf(np.sum(test_result[total_friends_indeces]) - 1, \
+                                                      len(total_friends_indeces), \
+                                                      total_positives/total_n)
         #setting FOF catalogue
         fof_catalogue['id'].append(f)
         fof_catalogue['mean_pos'].append(np.mean(positive_positions[fofid_indeces], axis = 0))
@@ -186,12 +195,10 @@ def get_fof_PR(positions, test_result, scale, fofid = None, min_neighbours = 2):
     #Make the fof_catalogue a geopandas dataframe
     fof_catalogue = fof2geodf(fof_catalogue)
     #Calculate p-value from binomial distribution assuming random infections
-    total_positives = np.sum(test_result)
-    total_n = len(test_result)
     fof_catalogue['p'] = 1 - stats.binom.cdf(fof_catalogue['positives']-1, \
                                              fof_catalogue['total'], \
                                              total_positives/total_n)#p-value of FOF
-    return fofid, mean_pr_fof, fof_catalogue
+    return fofid, mean_pr_fof, pval_fof, fof_catalogue
 
 def fof2geodf(fof_catalogue, epsg = 3857):
     """
