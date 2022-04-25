@@ -273,7 +273,8 @@ def num_pairs_bootstrap(x1, y1, x2 = None, y2 = None, bins = 10, ranges = None, 
 
 def correlation_function(x1, y1, x2, y2, bins = 10, ranges = None, \
                         mode = 'latlon', get_error = True, nrands = 10, \
-                        w1 = None, w2 = None):
+                        w1 = None, w2 = None, x1x = None, y1x = None, \
+                        w1x = None, x2x = None, y2x = None, w2x = None):
     """
     This method calculates the 2-point correlation function between two populations.
 
@@ -308,6 +309,20 @@ def correlation_function(x1, y1, x2, y2, bins = 10, ranges = None, \
         Weights applied to the pairs from population 1
     w2: np.array
         Weights applied to the pairs from population 2
+    x1x: np.array
+        x position of population to be cross-paired with population 1 (if any)
+    y1x: np.array
+        y position of population to be cross-paired with population 1 (if any)
+    x2x: np.array
+        x position of population to be cross-paired with population 2 (if any)
+    y2x: np.array
+        y position of population to be cross-paired with population 2 (if any)
+    w1x: np.array
+        Weights applied to the pairs from population to be cross-paired with
+        population  1 (if any)
+    w2x: np.array
+        Weights applied to the pairs from population to be cross-paired with
+        population  2 (if any)
 
     Returns:
     --------
@@ -321,29 +336,60 @@ def correlation_function(x1, y1, x2, y2, bins = 10, ranges = None, \
         The errors of the 2PCF
     """
     #Population sizes
-    if w1 is None:
-        len_1 = float(len(x1))
-    else:
-        len_1 = np.sum(w1)
-    if w2 is None:
-        len_2 = float(len(x2))
-    else:
-        len_2 = np.sum(w2)
+    len_1 = get_lengths(x1, w1)
+    len_2 = get_lengths(x2, w2)
+    if x1x is not None:
+        len_1 = (len_1*get_lengths(x1x, w1x))**.5
+    if x2x is not None:
+        len_2 = (len_2*get_lengths(x2x, w2x))**.5
     #Get number of pairs for the two population, forcing the same bin ranges
     if get_error:
-        numpairs_1, errors_1, weighted_bins_1, edges_1, mean_bootstrap_1, numpairs_rands_1 = num_pairs_bootstrap(x1, y1, bins = bins, ranges = ranges, mode = mode, nrands = nrands, out_subsamples = True, w1 = w1)
-        numpairs_2, errors_2, weighted_bins_2, edges_2, mean_bootstrap_2, numpairs_rands_2 = num_pairs_bootstrap(x2, y2, bins = bins, ranges = [edges_1[0], edges_1[-1]], mode = mode, nrands = nrands, out_subsamples = True, w1 = w2)
+        numpairs_1, errors_1, weighted_bins_1, edges_1, mean_bootstrap_1, \
+        numpairs_rands_1 = num_pairs_bootstrap(x1, y1, x1x, y1x, bins = bins, \
+                                                ranges = ranges, mode = mode, \
+                                                nrands = nrands, \
+                                                out_subsamples = True, \
+                                                w1 = w1, w2 = w1x)
+        numpairs_2, errors_2, weighted_bins_2, edges_2, mean_bootstrap_2, \
+        numpairs_rands_2 = num_pairs_bootstrap(x2, y2, x2x, y2x, bins = bins, \
+                                                ranges = [edges_1[0], edges_1[-1]], \
+                                                mode = mode, nrands = nrands, \
+                                                out_subsamples = True, w1 = w2, \
+                                                w2 = w2x)
         corr_rands = ((len_2/len_1)**2.)*numpairs_rands_1/numpairs_rands_2 - 1.
         errors = np.std(corr_rands, axis = 0)
     else:
-        numpairs_1, weighted_bins_1, edges_1 = num_pairs(x1, y1, bins = bins, ranges = ranges, mode = mode, w1 = w1)
-        numpairs_2, weighted_bins_2, edges_2 = num_pairs(x2, y2, bins = bins, ranges = [edges_1[0], edges_1[-1]], mode = mode, w1 = w2)
+        numpairs_1, weighted_bins_1, edges_1 = num_pairs(x1, y1, x1x, y1x, bins = bins, \
+                                                        ranges = ranges, mode = mode, \
+                                                        w1 = w1, w2 = w1x)
+        numpairs_2, weighted_bins_2, edges_2 = num_pairs(x2, y2, x2x, y2x, bins = bins, \
+                                                        ranges = [edges_1[0], edges_1[-1]], \
+                                                        mode = mode, w1 = w2, \
+                                                        w2 = w2x)
     #2-Point Correlation Function
     corr = ((len_2/len_1)**2.)*numpairs_1/numpairs_2 - 1.
     if get_error:
         return corr, weighted_bins_1, edges_1, errors
     else:
         return corr, weighted_bins_1, edges_1
+
+def get_lengths(x1, w1 = None):
+    """
+    This method calculates the total length of a population based on their
+    number of elements and weigths.
+
+    Parameters:
+    -----------
+    x: np.array
+        Array of positions (one of the dimensions) of the population
+    w: np.array
+        Array of weights of the elements of the population
+    """
+    if w1 is None:#TODO make get_len function #TODO repeat this for crosses and get final len
+        len_1 = float(len(x1))
+    else:
+        len_1 = np.sum(w1)
+    return len_1
 
 def bootstrap_resample(data):
     """
