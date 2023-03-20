@@ -338,10 +338,12 @@ def correlation_function(x1, y1, x2, y2, bins = 10, ranges = None, \
     #Population sizes
     len_1 = get_lengths(x1, w1)
     len_2 = get_lengths(x2, w2)
+    #Factor 2 in len_{1,2} when x{1,2}x is not None is applied to compensate
+    #that auto correlations have len_{1,2}*len_{1,2}/2 pairs
     if x1x is not None:
-        len_1 = (len_1*get_lengths(x1x, w1x))**.5
+        len_1 = (2*len_1*get_lengths(x1x, w1x))**.5
     if x2x is not None:
-        len_2 = (len_2*get_lengths(x2x, w2x))**.5
+        len_2 = (2*len_2*get_lengths(x2x, w2x))**.5
     #Get number of pairs for the two population, forcing the same bin ranges
     if get_error:
         numpairs_1, errors_1, weighted_bins_1, edges_1, mean_bootstrap_1, \
