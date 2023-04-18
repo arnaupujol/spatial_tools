@@ -1,7 +1,7 @@
 # Spatial Tools
 
 > Author: **Arnau Pujol**  
-> Year: **2020**  
+> Year: **2023**  
 > Version: **1.0**  
 
 This repository contains tools for spatial analyses.
